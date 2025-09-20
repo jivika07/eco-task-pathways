@@ -1,6 +1,6 @@
 import { Leaf } from "lucide-react";
 import { RoleToggle } from "./RoleToggle";
-import heroImage from "@/assets/eco-hero.jpg";
+import pixelLandscape from "@/assets/pixel-landscape.jpg";
 
 interface EcoTaskHeaderProps {
   currentRole: "teacher" | "student";
@@ -12,21 +12,28 @@ export const EcoTaskHeader = ({ currentRole, onRoleChange }: EcoTaskHeaderProps)
     <div className="relative">
       {/* Hero Background */}
       <div 
-        className="h-64 bg-cover bg-center rounded-xl mb-8 relative overflow-hidden"
-        style={{ backgroundImage: `url(${heroImage})` }}
+        className="h-80 bg-cover bg-center rounded-xl mb-8 relative overflow-hidden border-4 border-primary/20"
+        style={{ 
+          backgroundImage: `url(${pixelLandscape})`,
+          imageRendering: 'pixelated'
+        }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary-dark/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/70 to-primary-dark/50" />
         <div className="relative h-full flex flex-col justify-center items-center text-center p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Leaf className="w-12 h-12 text-white drop-shadow-lg" />
-            <h1 className="text-4xl font-bold text-white drop-shadow-lg">
-              EcoTask Platform
+          <div className="flex items-center gap-4 mb-6">
+            <Leaf className="w-16 h-16 text-white drop-shadow-lg animate-pulse" />
+            <h1 className="text-5xl font-pixel text-white drop-shadow-lg tracking-wider">
+              EcoTask
             </h1>
           </div>
-          <p className="text-xl text-white/90 drop-shadow-md max-w-2xl">
-            Empowering students and teachers to create positive environmental impact through 
-            collaborative eco-friendly tasks and real-world action
-          </p>
+          <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 border-2 border-white/20">
+            <p className="text-lg font-pixel text-white/95 drop-shadow-md max-w-3xl leading-relaxed">
+              Level Up Your Environmental Impact!
+            </p>
+            <p className="text-sm text-white/80 mt-2 max-w-2xl">
+              Complete eco-quests, earn points, and save the planet one task at a time
+            </p>
+          </div>
         </div>
       </div>
 

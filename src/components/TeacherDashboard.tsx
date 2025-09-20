@@ -91,7 +91,7 @@ export const TeacherDashboard = ({ tasks, onTaskCreated, onTaskUpdate }: Teacher
       {/* Action Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Manage Eco-Tasks</h2>
+          <h2 className="text-2xl font-pixel text-foreground mb-2">Manage Eco-Tasks</h2>
           <p className="text-muted-foreground">Create, assign, and track environmental tasks for your students</p>
         </div>
         <Button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
