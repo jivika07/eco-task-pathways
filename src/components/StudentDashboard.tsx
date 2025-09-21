@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TaskCard, EcoTask } from "./TaskCard";
+import { TaskDetailsModal } from "./TaskDetailsModal";
 import { TaskSubmissionModal } from "./TaskSubmissionModal";
 import { Trophy, Target, CheckCircle, Clock } from "lucide-react";
 
@@ -12,6 +13,7 @@ interface StudentDashboardProps {
 }
 
 export const StudentDashboard = ({ tasks, onTaskUpdate }: StudentDashboardProps) => {
+  const [selectedTaskForDetails, setSelectedTaskForDetails] = useState<EcoTask | null>(null);
   const [selectedTask, setSelectedTask] = useState<EcoTask | null>(null);
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
 
@@ -26,6 +28,13 @@ export const StudentDashboard = ({ tasks, onTaskUpdate }: StudentDashboardProps)
     if (task) {
       setSelectedTask(task);
       setShowSubmissionModal(true);
+    }
+  };
+
+  const handleViewDetails = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      setSelectedTaskForDetails(task);
     }
   };
 
@@ -119,7 +128,7 @@ export const StudentDashboard = ({ tasks, onTaskUpdate }: StudentDashboardProps)
                 task={task}
                 userRole="student"
                 onSubmit={handleSubmitTask}
-                onView={(taskId) => console.log("View task details:", taskId)}
+                onView={handleViewDetails}
               />
             ))}
           </div>
@@ -139,7 +148,7 @@ export const StudentDashboard = ({ tasks, onTaskUpdate }: StudentDashboardProps)
                 key={task.id}
                 task={task}
                 userRole="student"
-                onView={(taskId) => console.log("View task details:", taskId)}
+                onView={handleViewDetails}
               />
             ))}
           </div>
@@ -159,7 +168,7 @@ export const StudentDashboard = ({ tasks, onTaskUpdate }: StudentDashboardProps)
                 key={task.id}
                 task={task}
                 userRole="student"
-                onView={(taskId) => console.log("View task details:", taskId)}
+                onView={handleViewDetails}
               />
             ))}
           </div>
@@ -180,6 +189,12 @@ export const StudentDashboard = ({ tasks, onTaskUpdate }: StudentDashboardProps)
           </CardContent>
         </Card>
       )}
+
+      <TaskDetailsModal
+        task={selectedTaskForDetails}
+        isOpen={!!selectedTaskForDetails}
+        onClose={() => setSelectedTaskForDetails(null)}
+      />
 
       <TaskSubmissionModal
         task={selectedTask}

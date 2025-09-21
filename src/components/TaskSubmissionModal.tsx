@@ -27,6 +27,31 @@ export const TaskSubmissionModal = ({ task, isOpen, onClose, onSubmit }: TaskSub
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type - only allow images and PDFs
+      const validTypes = [
+        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+        'application/pdf'
+      ];
+      
+      if (!validTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload only images (JPG, PNG, GIF, WebP) or PDF files",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check file size (max 20MB)
+      if (file.size > 20 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload files smaller than 20MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
@@ -115,7 +140,7 @@ export const TaskSubmissionModal = ({ task, isOpen, onClose, onSubmit }: TaskSub
                 <input
                   id="evidence"
                   type="file"
-                  accept={task.submissionType === "photo" ? "image/*" : "video/*"}
+                  accept="image/*,application/pdf"
                   onChange={handleFileChange}
                   className="hidden"
                 />

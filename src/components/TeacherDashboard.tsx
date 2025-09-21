@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TaskCard, EcoTask } from "./TaskCard";
 import { TaskCreationForm } from "./TaskCreationForm";
+import { TaskDetailsModal } from "./TaskDetailsModal";
+import { SubmissionReviewModal } from "./SubmissionReviewModal";
 import { Plus, BarChart3, Users, CheckSquare, AlertTriangle } from "lucide-react";
 
 interface TeacherDashboardProps {
@@ -14,6 +16,8 @@ interface TeacherDashboardProps {
 
 export const TeacherDashboard = ({ tasks, onTaskCreated, onTaskUpdate }: TeacherDashboardProps) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedTaskForDetails, setSelectedTaskForDetails] = useState<EcoTask | null>(null);
+  const [selectedTaskForReview, setSelectedTaskForReview] = useState<EcoTask | null>(null);
 
   const stats = {
     totalTasks: tasks.length,
@@ -28,8 +32,23 @@ export const TeacherDashboard = ({ tasks, onTaskCreated, onTaskUpdate }: Teacher
   };
 
   const handleVerifySubmissions = (taskId: string) => {
-    // In a real app, this would open a submissions review modal
-    console.log("Opening submissions for task:", taskId);
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      setSelectedTaskForReview(task);
+    }
+  };
+
+  const handleViewDetails = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      setSelectedTaskForDetails(task);
+    }
+  };
+
+  const handleSubmissionReview = (taskId: string, action: "approve" | "reject", feedback?: string) => {
+    // In a real app, this would update the submission status in the backend
+    console.log("Review submission:", { taskId, action, feedback });
+    setSelectedTaskForReview(null);
   };
 
   if (showCreateForm) {
@@ -125,11 +144,25 @@ export const TeacherDashboard = ({ tasks, onTaskCreated, onTaskUpdate }: Teacher
               task={task}
               userRole="teacher"
               onVerify={handleVerifySubmissions}
-              onView={(taskId) => console.log("View task details:", taskId)}
+              onView={handleViewDetails}
             />
           ))}
         </div>
       )}
+
+      {/* Modals */}
+      <TaskDetailsModal
+        task={selectedTaskForDetails}
+        isOpen={!!selectedTaskForDetails}
+        onClose={() => setSelectedTaskForDetails(null)}
+      />
+      
+      <SubmissionReviewModal
+        task={selectedTaskForReview}
+        isOpen={!!selectedTaskForReview}
+        onClose={() => setSelectedTaskForReview(null)}
+        onReview={handleSubmissionReview}
+      />
     </div>
   );
 };
