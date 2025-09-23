@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Camera, MapPin, Clock } from "lucide-react";
 import { EcoTask } from "./TaskCard";
+import { computeTextRelevance, scoreToLabel } from "@/lib/utils";
 
 interface TaskSubmissionModalProps {
   task: EcoTask | null;
@@ -70,12 +71,29 @@ export const TaskSubmissionModal = ({ task, isOpen, onClose, onSubmit }: TaskSub
       return;
     }
 
+    // Basic relevance gate using task title + description vs student's note
+    const taskText = `${task.title} ${task.description ?? ""}`;
+    const fileNameText = selectedFile?.name?.replace(/\.[a-z0-9]+$/i, "").replace(/[-_]/g, " ") || "";
+    const submissionText = `${fileNameText} ${note || ""}`;
+    const { score, reasons } = computeTextRelevance(taskText, submissionText);
+    const label = scoreToLabel(score);
+
+    // Relax blocking: only block if note is very short and relevance is low
+    const noteIsShort = (note?.trim().length || 0) < 20;
+    if (label === "low") {
+      toast({
+        title: noteIsShort ? "Add a bit more detail?" : "Low relevance warning",
+        description: `${reasons[0]}. We'll submit now, but adding a short note can help approval.`,
+      });
+    }
+
     const submission = {
       taskId: task.id,
       note,
       file: selectedFile,
       timestamp: new Date().toISOString(),
-      location: "Current Location" // Mock geolocation
+      location: "Current Location", // Mock geolocation
+      relevanceScore: score
     };
 
     onSubmit(task.id, submission);

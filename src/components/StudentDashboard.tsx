@@ -39,11 +39,13 @@ export const StudentDashboard = ({ tasks, onTaskUpdate }: StudentDashboardProps)
   };
 
   const handleSubmission = (taskId: string, submission: any) => {
-    const updatedTasks = tasks.map(task =>
-      task.id === taskId
-        ? { ...task, status: "submitted" as const }
-        : task
-    );
+    // Attach the new submission onto the task for teacher review
+    const updatedTasks = tasks.map(task => {
+      if (task.id !== taskId) return task;
+      const existing = (task as any).submissionsList || [];
+      const withStudent = { ...submission, studentName: "Student" };
+      return { ...task, status: "submitted" as const, submissionsList: [withStudent, ...existing] } as any;
+    });
     onTaskUpdate(updatedTasks);
     setShowSubmissionModal(false);
     setSelectedTask(null);

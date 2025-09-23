@@ -8,46 +8,19 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, XCircle, Calendar, MapPin, Clock, FileText, Image, Video } from "lucide-react";
 import { EcoTask } from "./TaskCard";
+import { computeTextRelevance, scoreToLabel } from "@/lib/utils";
 
 interface SubmissionReviewModalProps {
   task: EcoTask | null;
   isOpen: boolean;
   onClose: () => void;
   onReview: (taskId: string, action: "approve" | "reject", feedback?: string) => void;
+  submissions?: any[];
 }
 
-// Mock submission data - in real app this would come from backend
-const mockSubmissions = [
-  {
-    id: "1",
-    studentName: "Alice Johnson",
-    submittedAt: "2024-01-15T10:30:00Z",
-    mediaUrl: "/api/placeholder/400/300",
-    mediaType: "image",
-    note: "I planted this oak tree in the local park with help from my family. It was amazing to see how many people stopped to ask what we were doing!",
-    location: "Central Park, NY"
-  },
-  {
-    id: "2", 
-    studentName: "Bob Smith",
-    submittedAt: "2024-01-14T14:20:00Z",
-    mediaUrl: "/api/placeholder/400/300",
-    mediaType: "image",
-    note: "Chose a native maple tree for my neighborhood. Had to research which species work best in our climate zone.",
-    location: "Brooklyn, NY"
-  },
-  {
-    id: "3",
-    studentName: "Carol Williams",
-    submittedAt: "2024-01-13T09:15:00Z", 
-    mediaUrl: "/api/placeholder/400/300",
-    mediaType: "video",
-    note: "Video shows the entire planting process from digging to watering. Really excited to watch it grow!",
-    location: "Queens, NY"
-  }
-];
+// Deprecated mock submissions removed; real submissions are passed in via props
 
-export const SubmissionReviewModal = ({ task, isOpen, onClose, onReview }: SubmissionReviewModalProps) => {
+export const SubmissionReviewModal = ({ task, isOpen, onClose, onReview, submissions = [] }: SubmissionReviewModalProps) => {
   const { toast } = useToast();
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [feedback, setFeedback] = useState("");
@@ -93,24 +66,24 @@ export const SubmissionReviewModal = ({ task, isOpen, onClose, onReview }: Submi
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Submissions List */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Pending Submissions ({mockSubmissions.length})</h3>
+            <h3 className="text-lg font-semibold">Pending Submissions ({submissions.length})</h3>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {mockSubmissions.map((submission) => (
+              {submissions.map((submission) => (
                 <Card 
-                  key={submission.id}
+                  key={submission.id || submission.timestamp}
                   className={`cursor-pointer transition-all ${
-                    selectedSubmission === submission.id 
+                    selectedSubmission === (submission.id || submission.timestamp)
                       ? "ring-2 ring-primary border-primary" 
                       : "hover:shadow-md"
                   }`}
-                  onClick={() => setSelectedSubmission(submission.id)}
+                  onClick={() => setSelectedSubmission(submission.id || submission.timestamp)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">{submission.studentName}</CardTitle>
+                      <CardTitle className="text-base">{submission.studentName || "Student"}</CardTitle>
                       <Badge variant="secondary" className="flex items-center gap-1">
-                        {getMediaIcon(submission.mediaType)}
-                        {submission.mediaType}
+                        {getMediaIcon(submission.mediaType || (submission.file?.type?.startsWith("image") ? "image" : (submission.file?.type?.startsWith("video") ? "video" : "file")))}
+                        {submission.mediaType || (submission.file?.type?.startsWith("image") ? "image" : (submission.file?.type?.startsWith("video") ? "video" : "file"))}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -118,11 +91,11 @@ export const SubmissionReviewModal = ({ task, isOpen, onClose, onReview }: Submi
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {new Date(submission.submittedAt).toLocaleDateString()}
+                        {new Date(submission.submittedAt || submission.timestamp).toLocaleDateString()}
                       </div>
                       <div className="flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
-                        {submission.location}
+                        {submission.location || "Unknown"}
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">
@@ -139,30 +112,37 @@ export const SubmissionReviewModal = ({ task, isOpen, onClose, onReview }: Submi
             {selectedSubmission ? (
               <>
                 {(() => {
-                  const submission = mockSubmissions.find(s => s.id === selectedSubmission);
+                  const submission = submissions.find(s => (s.id || s.timestamp) === selectedSubmission);
                   if (!submission) return null;
+                  const taskText = `${task.title} ${task.description ?? ""}`;
+                  const { score, reasons } = computeTextRelevance(taskText, submission.note || "");
+                  const relLabel = scoreToLabel(score);
                   
                   return (
                     <>
-                      <h3 className="text-lg font-semibold">Review: {submission.studentName}</h3>
+                      <h3 className="text-lg font-semibold">Review: {submission.studentName || "Student"}</h3>
                       
                       <Card>
                         <CardContent className="pt-6">
-                          {submission.mediaType === "image" ? (
+                          {(submission.mediaType || (submission.file?.type?.startsWith("image") ? "image" : "")) === "image" ? (
                             <img 
-                              src={submission.mediaUrl} 
+                              src={submission.mediaUrl || (typeof submission.file === 'string' ? submission.file : undefined) || (submission.file ? URL.createObjectURL(submission.file) : undefined)} 
                               alt="Student submission"
                               className="w-full h-64 object-cover rounded-lg mb-4"
                             />
                           ) : (
                             <video 
-                              src={submission.mediaUrl}
+                              src={submission.mediaUrl || (typeof submission.file === 'string' ? submission.file : undefined)}
                               controls
                               className="w-full h-64 rounded-lg mb-4"
                             />
                           )}
                           
                           <div className="space-y-3">
+                            <div className={`text-sm ${relLabel === "high" ? "text-green-600" : relLabel === "medium" ? "text-amber-600" : "text-red-600"}`}>
+                              Relevance: <span className="font-medium capitalize">{relLabel}</span> ({Math.round(score * 100)}%)
+                              {reasons?.[0] ? <span className="ml-2 text-muted-foreground">• {reasons[0]}</span> : null}
+                            </div>
                             <div>
                               <Label className="text-sm font-medium">Student Notes</Label>
                               <p className="text-sm text-muted-foreground mt-1">
@@ -173,11 +153,11 @@ export const SubmissionReviewModal = ({ task, isOpen, onClose, onReview }: Submi
                             <div className="flex gap-4 text-sm">
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-4 h-4" />
-                                {new Date(submission.submittedAt).toLocaleString()}
+                                {new Date(submission.submittedAt || submission.timestamp).toLocaleString()}
                               </div>
                               <div className="flex items-center gap-1">
                                 <MapPin className="w-4 h-4" />
-                                {submission.location}
+                                {submission.location || "Unknown"}
                               </div>
                             </div>
                           </div>

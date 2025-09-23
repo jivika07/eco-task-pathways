@@ -52,7 +52,7 @@ const getStatusColor = (status: string) => {
 
 export const TaskCard = ({ task, userRole, onSubmit, onVerify, onView }: TaskCardProps) => {
   return (
-    <Card className="group hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
+    <Card className="group hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary animate-fade-in-up animate-gentle-float">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-2">

@@ -162,6 +162,7 @@ export const TeacherDashboard = ({ tasks, onTaskCreated, onTaskUpdate }: Teacher
         isOpen={!!selectedTaskForReview}
         onClose={() => setSelectedTaskForReview(null)}
         onReview={handleSubmissionReview}
+        submissions={(selectedTaskForReview as any)?.submissionsList || []}
       />
     </div>
   );
