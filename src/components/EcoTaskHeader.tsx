@@ -23,7 +23,7 @@ export const EcoTaskHeader = ({ currentRole, onRoleChange }: EcoTaskHeaderProps)
           <div className="flex items-center gap-4 mb-6">
             <Leaf className="w-16 h-16 text-white drop-shadow-lg animate-pulse" />
             <h1 className="text-5xl font-pixel text-white drop-shadow-lg tracking-wider">
-              EcoTask
+              Green Actions
             </h1>
           </div>
           <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 border-2 border-white/20">
